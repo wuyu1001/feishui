@@ -183,19 +183,19 @@ def compareData3(dataType, pagesize, page):
     total_new = 0
     total_change = 0
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select nj, bh, bjmc, zyh, xqdm, bjrs, fdydh, fdysfzjh, xz, frxnd, flxnd, yxsh from zzjg_bjxx where is_changed ='1'",
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select nj, bh, bjmc, zyh, xqdm, bjrs, fdydh, fdysfzjh, xz, frxnd, flxnd, yxsh from zzjg_bjxx_CW where bh in (select bh from zzjg_bjxx where is_changed = '1')",
         db.engine)
-    compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
+    compare = datacompy.Compare(df1, df2, join_columns=['bh'])
     # print(compare.report())
 
     page = int(page)
     pagesize = int(pagesize)
     # 只存在于第一个dataframe的数据 不存在第二个dataframe的数据 用df1_unq_rows拿到
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select nj, bh, bjmc, zyh, xqdm, bjrs, fdydh, fdysfzjh, xz, frxnd, flxnd, yxsh from zzjg_bjxx where bh not in (select bh from zzjg_bjxx_cw)",
         db.engine)
     total_new = len(df_new)
     # 2个dataframe 标识列一样 任意一个字段不一样的数据 用all_mismatch拿到
@@ -219,9 +219,9 @@ def modifyTable3(tablename):
         par.pop('rowno')
         par.pop('is_edit')
         if (tablename == 'zzjg_bjxx'):
-            bjxxModel.query.filter_by(flsh=par.get('flsh')).update(par)
+            bjxxModel.query.filter_by(flsh=par.get('bh')).update(par)
         if (tablename == 'zzjg_bjxx_cw'):
-            bjxxCwModel.query.filter_by(flsh=par.get('flsh')).update(par)
+            bjxxCwModel.query.filter_by(flsh=par.get('bh')).update(par)
         db.session.commit()
         return "修改成功"
     except Exception as e:
@@ -233,15 +233,15 @@ def create_upload_data3():
     db.session.execute('truncate  table zzjg_bjxx_upload')
     db.session.commit()
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select nj, bh, bjmc, zyh, xqdm, bjrs, fdydh, fdysfzjh, xz, frxnd, flxnd, yxsh from zzjg_bjxx where is_changed ='1'",
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select nj, bh, bjmc, zyh, xqdm, bjrs, fdydh, fdysfzjh, xz, frxnd, flxnd, yxsh from zzjg_bjxx_CW where bh in (select bh from zzjg_bjxx where is_changed = '1')",
         db.engine)
 
-    compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
+    compare = datacompy.Compare(df1, df2, join_columns=['bh'])
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select nj, bh, bjmc, zyh, xqdm, bjrs, fdydh, fdysfzjh, xz, frxnd, flxnd, yxsh from zzjg_bjxx where bh not in (select bh from zzjg_bjxx_cw)",
         db.engine)
     # 新数据实际操作状态为 1
     df_new['sjcz'] = '1'
@@ -269,9 +269,9 @@ def upload3(stu_data):
                          json.dumps({"arrinfo": aa}),
                          headers={"Content-Type": "application/json"}).text
         result = json.loads(result)
-        bjxxModel.query.filter(bjxxModel.flsh == stu_data.flsh).update({'is_changed':'0'})
-        bjxxCwModel.query.filter(bjxxCwModel.flsh == stu_data.flsh).delete()
-        bjxxUploadModel.query.filter(bjxxUploadModel.flsh == stu_data.flsh).delete()
+        bjxxModel.query.filter(bjxxModel.bh == stu_data.bh).update({'is_changed':'0'})
+        bjxxCwModel.query.filter(bjxxCwModel.bh == stu_data.bh).delete()
+        bjxxUploadModel.query.filter(bjxxUploadModel.bh == stu_data.bh).delete()
         db.session.commit()
         bb = bjxxCwModel(**stu_data.to_dict())
         bb.flag = "9"
@@ -292,19 +292,19 @@ def compareData1(dataType, pagesize, page):
     total_new = 0
     total_change = 0
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select yxsdm, yxsmc from zzjg_yxxx where is_changed ='1'",
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select yxsdm, yxsmc from zzjg_yxxx_CW where yxsdm in (select yxsdm from zzjg_yxxx where is_changed = '1')",
         db.engine)
-    compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
+    compare = datacompy.Compare(df1, df2, join_columns=['yxsdm'])
     # print(compare.report())
 
     page = int(page)
     pagesize = int(pagesize)
     # 只存在于第一个dataframe的数据 不存在第二个dataframe的数据 用df1_unq_rows拿到
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select yxsdm, yxsmc from zzjg_yxxx where yxsdm not in (select yxsdm from zzjg_yxxx_cw)",
         db.engine)
     total_new = len(df_new)
     # 2个dataframe 标识列一样 任意一个字段不一样的数据 用all_mismatch拿到
@@ -328,9 +328,9 @@ def modifyTable1(tablename):
         par.pop('rowno')
         par.pop('is_edit')
         if (tablename == 'zzjg_yxxx'):
-            bjxxModel.query.filter_by(flsh=par.get('flsh')).update(par)
+            yxxxModel.query.filter_by(yxsdm=par.get('yxsdm')).update(par)
         if (tablename == 'zzjg_yxxx_cw'):
-            bjxxCwModel.query.filter_by(flsh=par.get('flsh')).update(par)
+            yxxxCwModel.query.filter_by(yxsdm=par.get('yxsdm')).update(par)
         db.session.commit()
         return "修改成功"
     except Exception as e:
@@ -342,25 +342,24 @@ def create_upload_data1():
     db.session.execute('truncate  table zzjg_yxxx_upload')
     db.session.commit()
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select yxsdm, yxsmc from zzjg_yxxx where is_changed ='1'",
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select yxsdm, yxsmc from zzjg_yxxx_CW where yxsdm in (select yxsdm from zzjg_yxxx where is_changed = '1')",
         db.engine)
 
-    compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
+    compare = datacompy.Compare(df1, df2, join_columns=['yxsdm'])
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select yxsdm, yxsmc from zzjg_yxxx where yxsdm not in (select yxsdm from zzjg_yxxx_cw)",
         db.engine)
     # 新数据实际操作状态为 1
     df_new['sjcz'] = '1'
     all_new = [yxxxUploadModel(**stu) for stu in df_new.to_dict(orient='records')]
     db.session.add_all(all_new)
     db.session.commit()
-    # df_new.to_sql('zzjg_xsxx_upload', db.engine, index=False, if_exists='append')
     df_change = compare.all_mismatch()
-    list = df_change['flsh'].tolist()
-    data_change = yxxxModel.query.filter(yxxxModel.flsh.in_(list)).all()
+    list = df_change['yxsdm'].tolist()
+    data_change = yxxxModel.query.filter(yxxxModel.yxsdm.in_(list)).all()
     all_change = [yxxxUploadModel(**stu.to_dict()) for stu in data_change]
     # 老数据数据实际操作状态为 2
     for a in all_change:
@@ -369,8 +368,6 @@ def create_upload_data1():
     db.session.commit()
     return "生成成功"
 
-
-
 def upload1(stu_data):
     with app.app_context():
         aa = "[" + json.dumps(stu_data.to_dict()) + "]"
@@ -378,9 +375,9 @@ def upload1(stu_data):
                          json.dumps({"arrinfo": aa}),
                          headers={"Content-Type": "application/json"}).text
         result = json.loads(result)
-        yxxxModel.query.filter(yxxxModel.flsh == stu_data.flsh).update({'is_changed':'0'})
-        yxxxCwModel.query.filter(yxxxCwModel.flsh == stu_data.flsh).delete()
-        yxxxUploadModel.query.filter(yxxxUploadModel.flsh == stu_data.flsh).delete()
+        yxxxModel.query.filter(yxxxModel.yxsdm == stu_data.yxsdm).update({'is_changed':'0'})
+        yxxxCwModel.query.filter(yxxxCwModel.yxsdm == stu_data.yxsdm).delete()
+        yxxxUploadModel.query.filter(yxxxUploadModel.yxsdm == stu_data.yxsdm).delete()
         db.session.commit()
         bb = yxxxCwModel(**stu_data.to_dict())
         bb.flag = "9"
@@ -400,19 +397,19 @@ def compareData2(dataType, pagesize, page):
     total_new = 0
     total_change = 0
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select zyh, zwmc, ywmc, zyfxh, bzkzym, yjszym, ssxkdl, ssxk, xz, pycc, zylxdm, yxsh, xqdm from zzjg_zyxx where is_changed ='1'",
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select zyh, zwmc, ywmc, zyfxh, bzkzym, yjszym, ssxkdl, ssxk, xz, pycc, zylxdm, yxsh, xqdm from zzjg_zyxx_CW where zyh in (select zyh from zzjg_zyxx where is_changed = '1')",
         db.engine)
-    compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
+    compare = datacompy.Compare(df1, df2, join_columns=['zyh'])
     # print(compare.report())
 
     page = int(page)
     pagesize = int(pagesize)
     # 只存在于第一个dataframe的数据 不存在第二个dataframe的数据 用df1_unq_rows拿到
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select zyh, zwmc, ywmc, zyfxh, bzkzym, yjszym, ssxkdl, ssxk, xz, pycc, zylxdm, yxsh, xqdm from zzjg_zyxx where zyh not in (select zyh from zzjg_zyxx_cw)",
         db.engine)
     total_new = len(df_new)
     # 2个dataframe 标识列一样 任意一个字段不一样的数据 用all_mismatch拿到
@@ -436,9 +433,9 @@ def modifyTable2(tablename):
         par.pop('rowno')
         par.pop('is_edit')
         if (tablename == 'zzjg_yxxx'):
-            zyxxModel.query.filter_by(flsh=par.get('flsh')).update(par)
+            zyxxModel.query.filter_by(zyh=par.get('zyh')).update(par)
         if (tablename == 'zzjg_yxxx_cw'):
-            zyxxCwModel.query.filter_by(flsh=par.get('flsh')).update(par)
+            zyxxCwModel.query.filter_by(zyh=par.get('zyh')).update(par)
         db.session.commit()
         return "修改成功"
     except Exception as e:
@@ -450,15 +447,15 @@ def create_upload_data2():
     db.session.execute('truncate  table zzjg_zyxx_upload')
     db.session.commit()
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select zyh, zwmc, ywmc, zyfxh, bzkzym, yjszym, ssxkdl, ssxk, xz, pycc, zylxdm, yxsh, xqdm from zzjg_zyxx where is_changed ='1'",
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select zyh, zwmc, ywmc, zyfxh, bzkzym, yjszym, ssxkdl, ssxk, xz, pycc, zylxdm, yxsh, xqdm from zzjg_zyxx_CW where zyh in (select zyh from zzjg_zyxx where is_changed = '1')",
         db.engine)
 
-    compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
+    compare = datacompy.Compare(df1, df2, join_columns=['zyh'])
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select zyh, zwmc, ywmc, zyfxh, bzkzym, yjszym, ssxkdl, ssxk, xz, pycc, zylxdm, yxsh, xqdm from zzjg_zyxx where zyh not in (select zyh from zzjg_zyxx_cw)",
         db.engine)
     # 新数据实际操作状态为 1
     df_new['sjcz'] = '1'
@@ -467,8 +464,8 @@ def create_upload_data2():
     db.session.commit()
     # df_new.to_sql('zzjg_xsxx_upload', db.engine, index=False, if_exists='append')
     df_change = compare.all_mismatch()
-    list = df_change['flsh'].tolist()
-    data_change = zyxxModel.query.filter(zyxxModel.flsh.in_(list)).all()
+    list = df_change['zyh'].tolist()
+    data_change = zyxxModel.query.filter(zyxxModel.zyh.in_(list)).all()
     all_change = [zyxxUploadModel(**stu.to_dict()) for stu in data_change]
     # 老数据数据实际操作状态为 2
     for a in all_change:
@@ -486,9 +483,9 @@ def upload2(stu_data):
                          json.dumps({"arrinfo": aa}),
                          headers={"Content-Type": "application/json"}).text
         result = json.loads(result)
-        zyxxModel.query.filter(zyxxModel.flsh == stu_data.flsh).update({'is_changed':'0'})
-        zyxxCwModel.query.filter(zyxxCwModel.flsh == stu_data.flsh).delete()
-        zyxxUploadModel.query.filter(zyxxUploadModel.flsh == stu_data.flsh).delete()
+        zyxxModel.query.filter(zyxxModel.zyh == stu_data.zyh).update({'is_changed':'0'})
+        zyxxCwModel.query.filter(zyxxCwModel.zyh == stu_data.zyh).delete()
+        zyxxUploadModel.query.filter(zyxxUploadModel.zyh == stu_data.zyh).delete()
         db.session.commit()
         bb = zyxxCwModel(**stu_data.to_dict())
         bb.flag = "9"
