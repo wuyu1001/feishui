@@ -15,6 +15,8 @@ import config.feishuiconfig as fs_config
 import requests as rs
 from flask_migrate import Migrate
 
+from utils import DbConnect
+
 
 app = Flask(__name__, template_folder='templates/feishui/dist', static_folder="templates/feishui/dist/static")
 app.config.from_object(dbConfig.Config)
@@ -219,9 +221,9 @@ def modifyTable3(tablename):
         par.pop('rowno')
         par.pop('is_edit')
         if (tablename == 'zzjg_bjxx'):
-            bjxxModel.query.filter_by(flsh=par.get('bh')).update(par)
+            bjxxModel.query.filter_by(bh=par.get('bh')).update(par)
         if (tablename == 'zzjg_bjxx_cw'):
-            bjxxCwModel.query.filter_by(flsh=par.get('bh')).update(par)
+            bjxxCwModel.query.filter_by(bh=par.get('bh')).update(par)
         db.session.commit()
         return "修改成功"
     except Exception as e:
@@ -250,8 +252,8 @@ def create_upload_data3():
     db.session.commit()
     # df_new.to_sql('zzjg_xsxx_upload', db.engine, index=False, if_exists='append')
     df_change = compare.all_mismatch()
-    list = df_change['flsh'].tolist()
-    data_change = bjxxModel.query.filter(bjxxModel.flsh.in_(list)).all()
+    list = df_change['bh'].tolist()
+    data_change = bjxxModel.query.filter(bjxxModel.bh.in_(list)).all()
     all_change = [bjxxUploadModel(**stu.to_dict()) for stu in data_change]
     # 老数据数据实际操作状态为 2
     for a in all_change:
@@ -501,6 +503,7 @@ def upload_data_2_feishui():
 
 @app.route('/upload_to_bajun', methods=["POST"])
 def upload_data_to_bajun():
+    conn = DbConnect("oracle", "user_ods", "xjcz#123", "192", "1521", "888")
     return "开始上传八骏，请等待几分钟后刷新页面"
 
 if __name__ == '__main__':
