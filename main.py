@@ -16,6 +16,7 @@ import requests as rs
 from flask_migrate import Migrate
 
 from utils import DbConnect
+from api_bajun import get_bajun_params
 
 
 app = Flask(__name__, template_folder='templates/feishui/dist', static_folder="templates/feishui/dist/static")
@@ -503,7 +504,14 @@ def upload_data_2_feishui():
 
 @app.route('/upload_to_bajun', methods=["POST"])
 def upload_data_to_bajun():
-    conn = DbConnect("oracle", "user_ods", "xjcz#123", "192", "1521", "888")
+    # 八骏测试地址
+    url_test = "http://ceshi.chsh8j.com/magus/welcomeintegratedapi/testGzyJf"
+    # 八骏正式地址
+    #url = "https://yx.cdzy.cn/magus/welcomeintegratedapi/testGzyJf"
+    params = get_bajun_params()
+    result = rs.post(url_test, json.dumps(params), headers={"Content-Type": "application/json"}).text
+    result = json.loads(result)
+    print(result)
     return "开始上传八骏，请等待几分钟后刷新页面"
 
 if __name__ == '__main__':
