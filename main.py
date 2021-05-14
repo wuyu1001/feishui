@@ -41,10 +41,10 @@ def compareData(dataType, pagesize, page):
     total_new = 0
     total_change = 0
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1' and flxnd like '%{}%'".format(search_value),
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1') and flxnd like '%{}%'".format(search_value),
         db.engine)
     compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
     # print(compare.report())
@@ -53,7 +53,7 @@ def compareData(dataType, pagesize, page):
     pagesize = int(pagesize)
     # 只存在于第一个dataframe的数据 不存在第二个dataframe的数据 用df1_unq_rows拿到
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw) and flxnd like '%{}%'".format(search_value),
         db.engine)
     total_new = len(df_new)
     # 2个dataframe 标识列一样 任意一个字段不一样的数据 用all_mismatch拿到
@@ -72,6 +72,19 @@ def compareData(dataType, pagesize, page):
 @app.route('/')
 def hello():
     return render_template('index.html')
+
+
+@app.route('/login', methods=["POST"])
+def login():
+    username = request.json.get('username')
+    pwd = request.json.get('pwd')
+    if not pwd and not username:
+        return "用户名密码不为空"
+    user = User.objects.filter(username=username, pwd=pwd).first()
+    if user:
+        return "登录成功"
+    else:
+        return "用户名或密码不存在"
 
 
 @app.route('/table/<tablename>/<pagesize>/<page>', methods=["POST"])
@@ -116,18 +129,19 @@ def modifyTable(tablename):
 
 @app.route('/create_upload_data', methods=["POST"])
 def create_upload_data():
+    search_value = request.json.get("search_value") if request.json.get("search_value") else ''
     db.session.execute('truncate  table zzjg_xsxx_upload')
     db.session.commit()
     df1 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1'",
+        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where is_changed ='1' and flxnd like '%{}%'".format(search_value),
         db.engine)
     df2 = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1')",
+        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx_CW where flsh in (select flsh from zzjg_xsxx where is_changed = '1' and flxnd like '%{}%'".format(search_value),
         db.engine)
 
     compare = datacompy.Compare(df1, df2, join_columns=['flsh'])
     df_new = pd.read_sql(
-        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw)",
+        "select xh, xm, xb, csrq, csd, jg, mzm, gjdq, sfzjlxm, sfzjlxmc, sfzjh, xjzt, xslbm, xslbmc, szbh, sznj, yxsh, zyh, xz, frxnd, flxnd, xkml, xsdqzt, xqdm, fzsbs, flsh, bdtime, bz, qyzt from zzjg_xsxx where flsh not in (select flsh from zzjg_xsxx_cw) and flxnd like '%{}%'".format(search_value),
         db.engine)
     # 新数据实际操作状态为 1
     df_new['sjcz'] = '1'
@@ -142,9 +156,9 @@ def create_upload_data():
     # 老数据数据实际操作状态为 2
     for a in all_change:
         a.sjcz = '2'
-    db.session.add_all(all_change)
-    db.session.commit()
-    return "生成成功"
+        db.session.add_all(all_change)
+        db.session.commit()
+        return "生成成功"
 
 
 # @socketio.on('beginupload')
@@ -179,6 +193,22 @@ def upload_data_feishui():
     return "开始上传，请等待几分钟后刷新页面"
 
 
+def upload_modify_data(stu_data):
+    with app.app_context():
+        aa = "[" + json.dumps(stu_data.to_dict().update(xslbm='0001')) + "]"
+        result = rs.post("http://127.0.0.1:8081/upload_stuinfo_feishui",
+                         json.dumps({"arrinfo": aa}),
+                         headers={"Content-Type": "application/json"}).text
+        result = json.loads(result)
+        print(result)
+
+@app.route('/upload_modify_data', methods=["POST"])
+def upload_modify_data_feishui():
+    arrinfo = xsxxModel.query.all()
+    future_to_url = {executor.submit(upload_modify_data, arr)  for arr in arrinfo}
+    # for arr in arrinfo:
+    #     executor.submit(upload, arr)
+    return "开始推送修改后数据，请等待几分钟后刷新页面"
 
 # 对比班级信息表
 @app.route('/compare3/<dataType>/<pagesize>/<page>')
